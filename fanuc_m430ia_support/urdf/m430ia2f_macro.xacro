@@ -94,7 +94,8 @@
         </geometry>
       </collision>
     </link>
-    <link name="${prefix}tool0"/>
+    <link name="${prefix}flange" />
+    <link name="${prefix}tool0" />
 
     <!-- joints -->
     <joint name="${prefix}joint_1" type="revolute">
@@ -132,10 +133,15 @@
       <axis xyz="0 0 1"/>
       <limit lower="-4.71" upper="4.71" effort="0" velocity="20.94"/>
     </joint>
-    <joint name="${prefix}joint_5-tool0" type="fixed">
+    <joint name="${prefix}joint_5-flange" type="fixed">
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <parent link="${prefix}link_5"/>
-      <child link="${prefix}tool0"/>
+      <parent link="${prefix}link_5" />
+      <child link="${prefix}flange" />
+    </joint>
+    <joint name="${prefix}flange-tool0" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${prefix}flange" />
+      <child link="${prefix}tool0" />
     </joint>
 
     <!-- ROS base_link to Fanuc World Coordinates transform -->
