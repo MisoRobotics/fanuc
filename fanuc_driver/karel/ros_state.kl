@@ -99,6 +99,10 @@ VAR
 	stat_count_            : INTEGER      -- status loop counter
 	cur_j_pos_             : JOINTPOS     -- current position of robot joints
 	sleep_time_            : INTEGER
+	ticks_                 : INTEGER      -- counts the number of ticks elapsed
+	elapsed_               : REAL         -- milliseconds until next packet
+	to_sleep_              : INTEGER      -- milliseconds to delay at end of loop
+	counter_               : INTEGER      -- counter for timing loop
 	shutdwn_req_           : BOOLEAN      -- program abort requested status
 
 
@@ -238,6 +242,11 @@ BEGIN
 		-- inform user
 		log_info(LOG_PFIX + 'Connected')
 
+		-- setup a counter to get more accurate timing
+		counter_ = 0
+		ticks_ = 0
+		CONNECT TIMER TO counter_
+
 		-- got client, start joint_state relay loop
 		WHILE (NOT shutdwn_req_) DO
 
@@ -290,11 +299,21 @@ BEGIN
 				stat_count_ = stat_count_ + 1
 			ENDIF
 
-			-- sleep a little (1/T)
-			DELAY sleep_time_
+			-- figure out the appropriate sleep time to keep the frequency consistent
+			ticks_ = ticks_ + 1
+			elapsed_ = ticks_ * 1000.0 / cfg_.loop_hz
+			IF (ticks_ >= cfg_.loop_hz) THEN
+				ticks_ = ticks_ - cfg.loop_hz
+			ENDIF
 
+			to_sleep_ = elapsed_ - counter_
+			IF (to_sleep_ > 0) THEN
+				-- sleep a little (1/T)
+				DELAY to_sleep_
+			ENDIF
 		-- inner WHILE TRUE DO
 		ENDWHILE
+		DISCONNECT TIMER counter_
 
 		-- exit with forced disconnect
 		exit_discon::
